@@ -3,9 +3,11 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   Scale, LayoutDashboard, FolderOpen, Users, Calendar,
-  FileText, Settings, LogOut, Menu, X
+  FileText, Settings, LogOut, Menu, X, ShieldCheck
 } from 'lucide-react';
 import { useState } from 'react';
+
+const ADMIN_EMAILS = ['laminendao2@gmail.com', 'laminendao2@hotmail.com'];
 
 const navItems = [
   { href: '/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
@@ -16,10 +18,11 @@ const navItems = [
   { href: '/parametres', label: 'Paramètres', icon: Settings },
 ];
 
-export default function Sidebar({ user }: { user: { nom: string; email: string; role: string } }) {
+export default function Sidebar({ user }: { user: { nom?: string; displayName?: string; email: string; role: string } }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const isAdmin = ADMIN_EMAILS.includes(user.email);
 
   async function logout() {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -42,7 +45,6 @@ export default function Sidebar({ user }: { user: { nom: string; email: string; 
       {/* Nav */}
       <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
         {navItems.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href.split('?')[0] && (href === pathname || href.includes('?') ? false : true);
           const isActive = pathname === href || (pathname.startsWith(href) && href !== '/dashboard');
           return (
             <Link
@@ -50,8 +52,6 @@ export default function Sidebar({ user }: { user: { nom: string; email: string; 
               href={href}
               onClick={() => setOpen(false)}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all ${
-                ''
-              } ${
                 isActive
                   ? 'bg-blue-600 text-white font-medium shadow-lg'
                   : 'text-blue-100 hover:bg-blue-800 hover:text-white'
@@ -62,17 +62,38 @@ export default function Sidebar({ user }: { user: { nom: string; email: string; 
             </Link>
           );
         })}
+
+        {/* Lien admin uniquement */}
+        {isAdmin && (
+          <>
+            <div className="px-3 pt-4 pb-1">
+              <p className="text-blue-400 text-xs font-semibold uppercase tracking-wider">Administration</p>
+            </div>
+            <Link
+              href="/admin/avocats"
+              onClick={() => setOpen(false)}
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all ${
+                pathname.startsWith('/admin')
+                  ? 'bg-blue-600 text-white font-medium shadow-lg'
+                  : 'text-blue-100 hover:bg-blue-800 hover:text-white'
+              }`}
+            >
+              <ShieldCheck className="flex-shrink-0 w-4 h-4" />
+              <span>Gestion des avocats</span>
+            </Link>
+          </>
+        )}
       </nav>
 
       {/* User */}
       <div className="border-t border-blue-800 p-4">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-            {(user.displayName ?? user.email ?? "?").charAt(0).toUpperCase()}
+            {(user.displayName ?? user.email ?? '?').charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <p className="text-white text-sm font-medium truncate">{(user.displayName ?? user.email ?? "").split(" ")[0]}</p>
-            <p className="text-blue-300 text-xs truncate">{user.role}</p>
+            <p className="text-white text-sm font-medium truncate">{(user.displayName ?? user.email ?? '').split(' ')[0]}</p>
+            <p className="text-blue-300 text-xs truncate">{isAdmin ? 'Admin' : user.role}</p>
           </div>
         </div>
         <button
