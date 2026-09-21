@@ -1,0 +1,35 @@
+====================================================
+  PLATEFORME CABINET JURIDIQUE - GUIDE DE DÉMARRAGE
+====================================================
+
+PRÉREQUIS
+---------
+Node.js v18+ doit être installé sur votre PC.
+Téléchargement : https://nodejs.org
+
+PREMIÈRE INSTALLATION
+---------------------
+1. Ouvrir un terminal dans ce dossier "plateforme"
+2. Exécuter : npm install
+3. Exécuter : npm run dev
+4. Ouvrir : http://localhost:3000/setup
+5. Créer votre compte administrateur
+6. Vous connecter sur : http://localhost:3000/login
+
+UTILISATION QUOTIDIENNE
+------------------------
+1. Double-cliquer sur "demarrer.bat"   (ou npm run dev)
+2. Ouvrir http://localhost:3000 dans votre navigateur
+
+ACCÈS DEPUIS D'AUTRES APPAREILS (même réseau WiFi)
+----------------------------------------------------
+Démarrez avec : npm run dev -- --hostname 0.0.0.0
+Depuis un autre PC/téléphone : http://[IP_DE_VOTRE_PC]:3000
+(Trouver votre IP : Ouvrir cmd → taper "ipconfig")
+
+DONNÉES
+-------
+La base de données est dans : data/avocat.db
+Sauvegardez ce fichier régulièrement !
+
+====================================================
