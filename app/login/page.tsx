@@ -42,45 +42,47 @@ export default function LoginPage() {
           <p className="text-blue-300 mt-1">Plateforme de gestion des dossiers</p>
         </div>
 
-        {/* Carte */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
-          <h2 className="text-xl font-semibold text-gray-800 mb-6">Connexion</h2>
+        {/* Carte — couleurs forcées pour ignorer le dark mode système */}
+        <div className="bg-white rounded-2xl shadow-2xl p-8" style={{ colorScheme: 'light' }}>
+          <h2 className="text-xl font-semibold mb-6" style={{ color: '#1f2937' }}>Connexion</h2>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+            <div className="mb-4 p-3 rounded-lg text-sm" style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c' }}>
               {error}
             </div>
           )}
 
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: '#374151' }}>Email</label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#9ca3af' }} />
                 <input
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   required
                   placeholder="votre@email.com"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                  className="w-full pl-10 pr-4 py-3 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500"
+                  style={{ border: '1px solid #e5e7eb', color: '#111827', background: '#ffffff' }}
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: '#374151' }}>Mot de passe</label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#9ca3af' }} />
                 <input
                   type={showPwd ? 'text' : 'password'}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   required
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                  className="w-full pl-10 pr-10 py-3 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500"
+                  style={{ border: '1px solid #e5e7eb', color: '#111827', background: '#ffffff' }}
                 />
-                <button type="button" onClick={() => setShowPwd(!showPwd)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <button type="button" onClick={() => setShowPwd(!showPwd)} className="absolute right-3 top-1/2 -translate-y-1/2 hover:opacity-70" style={{ color: '#9ca3af' }}>
                   {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
@@ -89,7 +91,8 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 rounded-lg transition shadow-lg hover:shadow-blue-500/25"
+              className="w-full font-semibold py-3 rounded-lg transition shadow-lg"
+              style={{ background: loading ? '#93c5fd' : '#2563eb', color: '#ffffff' }}
             >
               {loading ? 'Connexion...' : 'Se connecter'}
             </button>
@@ -101,7 +104,7 @@ export default function LoginPage() {
         </p>
         <p className="text-center text-xs mt-2">
           <span className="text-slate-400">Vous êtes client ? </span>
-          <a href="/portail/login" className="text-blue-500 hover:underline">Accéder à l'espace client</a>
+          <a href="/portail/login" className="text-blue-400 hover:underline">Accéder à l'espace client</a>
         </p>
       </div>
     </div>
