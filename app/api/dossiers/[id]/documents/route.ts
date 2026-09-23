@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, adminStorage } from '@/lib/firebase-admin';
 import { verifySession } from '@/lib/auth-firebase';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { isDriveConnected, getOrCreateDossierFolder, getAccessToken, uploadFileToDrive } from '@/lib/google-drive';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -95,43 +96,53 @@ export async function POST(request: NextRequest, { params }: Params) {
     }
 
     const timestamp = Date.now();
-    const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const storagePath = `dossiers/${dossierId}/${timestamp}_${sanitizedName}`;
-
-    // Upload to Firebase Storage via Admin SDK
-    const bucket = adminStorage.bucket();
-    const fileRef = bucket.file(storagePath);
-
+    const sanitizedName = file.name.replace(/[^a-zA-Z0-9._À-ɏ-]/g, '_');
+    const fileName = `${timestamp}_${sanitizedName}`;
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    await fileRef.save(buffer, {
-      metadata: {
-        contentType: file.type,
-        metadata: {
-          uploadedBy: claims.uid,
-          dossierId,
-          originalName: file.name,
-        },
-      },
-    });
+    // ── Essayer Google Drive en priorité ──────────────────────────────────────
+    const avocatUid: string = dd2.avocatId ?? claims.uid;
+    let url: string;
+    let driveFileId: string | null = null;
+    let storagePath: string | null = null;
+    let storageType: 'drive' | 'firebase' = 'firebase';
 
-    // Make the file publicly readable, or use signed URLs
-    await fileRef.makePublic();
-    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${storagePath}`;
+    if (await isDriveConnected(avocatUid)) {
+      try {
+        const dossierRef = dd2.reference ?? dossierId;
+        const folderId = await getOrCreateDossierFolder(avocatUid, dossierRef, dossierId);
+        const accessToken = await getAccessToken(avocatUid);
+        const result = await uploadFileToDrive(accessToken, folderId, fileName, file.type, buffer);
+        url = result.webViewLink;
+        driveFileId = result.fileId;
+        storageType = 'drive';
+      } catch (driveErr) {
+        console.warn('Drive upload échoué (avocat), fall-back Firebase :', driveErr);
+        const fb = await uploadToFirebase(dossierId, fileName, file.type, buffer, claims.uid);
+        url = fb.url;
+        storagePath = fb.storagePath;
+      }
+    } else {
+      const fb = await uploadToFirebase(dossierId, fileName, file.type, buffer, claims.uid);
+      url = fb.url;
+      storagePath = fb.storagePath;
+    }
 
     // Store document metadata in Firestore sub-collection
-    const docMeta = {
+    const docMeta: Record<string, any> = {
       nom: nom ?? file.name,
       nomOriginal: file.name,
-      storagePath,
-      url: publicUrl,
+      url,
       type: file.type,
       taille: file.size,
+      storageType,
       uploadedBy: claims.uid,
       uploadedAt: FieldValue.serverTimestamp(),
       visibleClient: false,
       visibleAssocies: true,
     };
+    if (driveFileId) docMeta.driveFileId = driveFileId;
+    if (storagePath) docMeta.storagePath = storagePath;
 
     const metaRef = await adminDb
       .collection('dossiers')
@@ -159,4 +170,24 @@ export async function POST(request: NextRequest, { params }: Params) {
     console.error('POST /api/dossiers/[id]/documents error:', error);
     return NextResponse.json({ error: 'Erreur lors du téléversement' }, { status: 500 });
   }
+}
+
+
+// ─── Helper Firebase Storage fall-back ───────────────────────────────────────
+async function uploadToFirebase(
+  dossierId: string,
+  fileName: string,
+  contentType: string,
+  buffer: Buffer,
+  uid: string,
+): Promise<{ url: string; storagePath: string }> {
+  const storagePath = `dossiers/${dossierId}/${fileName}`;
+  const bucket = adminStorage.bucket();
+  const fileRef = bucket.file(storagePath);
+  await fileRef.save(buffer, {
+    metadata: { contentType, metadata: { uploadedBy: uid, dossierId } },
+  });
+  await fileRef.makePublic();
+  const url = `https://storage.googleapis.com/${bucket.name}/${storagePath}`;
+  return { url, storagePath };
 }
