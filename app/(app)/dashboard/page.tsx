@@ -47,25 +47,25 @@ export default function Dashboard() {
   }
 
   const statCards = [
-    { label: 'Total Dossiers', value: stats.totalDossiers, icon: FolderOpen, color: 'bg-blue-600', href: '/dossiers' },
-    { label: 'En cours', value: stats.enCours, icon: Clock, color: 'bg-orange-500', href: '/dossiers?statut=en_cours' },
-    { label: 'Clôturés', value: stats.clotures, icon: TrendingUp, color: 'bg-green-600', href: '/dossiers?statut=cloture' },
-    { label: 'Clients', value: stats.totalClients, icon: Users, color: 'bg-purple-600', href: '/clients' },
+    { label: 'Total Dossiers', value: stats.totalDossiers, icon: FolderOpen, color: 'from-blue-500 to-blue-600', ring: 'group-hover:shadow-blue-500/30', href: '/dossiers' },
+    { label: 'En cours', value: stats.enCours, icon: Clock, color: 'from-orange-400 to-orange-500', ring: 'group-hover:shadow-orange-500/30', href: '/dossiers?statut=en_cours' },
+    { label: 'Clôturés', value: stats.clotures, icon: TrendingUp, color: 'from-emerald-500 to-emerald-600', ring: 'group-hover:shadow-emerald-500/30', href: '/dossiers?statut=cloture' },
+    { label: 'Clients', value: stats.totalClients, icon: Users, color: 'from-purple-500 to-purple-600', ring: 'group-hover:shadow-purple-500/30', href: '/clients' },
   ];
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Tableau de bord</h1>
-        <p className="text-gray-500 mt-1">{new Date().toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' })}</p>
+      <div className="mb-8 animate-fade-in">
+        <h1 className="text-2xl lg:text-3xl font-bold text-[#0C1B3E]">Tableau de bord</h1>
+        <p className="text-gray-500 mt-1 capitalize">{new Date().toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' })}</p>
       </div>
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {statCards.map(({ label, value, icon: Icon, color, href }) => (
-          <Link key={label} href={href} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition group">
-            <div className={`w-11 h-11 ${color} rounded-xl flex items-center justify-center mb-3`}>
+        {statCards.map(({ label, value, icon: Icon, color, ring, href }) => (
+          <Link key={label} href={href} className={`bg-white/90 backdrop-blur-sm rounded-2xl p-5 shadow-sm border border-white hover:shadow-xl ${ring} hover:-translate-y-0.5 transition-all duration-200 group animate-fade-in`}>
+            <div className={`w-11 h-11 bg-gradient-to-br ${color} rounded-xl flex items-center justify-center mb-3 shadow-md`}>
               <Icon className="w-5 h-5 text-white" />
             </div>
             <p className="text-2xl font-bold text-gray-900">{value}</p>
@@ -76,7 +76,7 @@ export default function Dashboard() {
 
       <div className="grid lg:grid-cols-2 gap-6 mb-6">
         {/* Dossiers par catégorie */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-sm border border-white/80 p-6 hover:shadow-md transition-shadow duration-200">
           <h2 className="font-semibold text-gray-800 mb-4">Dossiers par catégorie</h2>
           <div className="space-y-3">
             {stats.parCategorie.length === 0 ? (
@@ -107,7 +107,7 @@ export default function Dashboard() {
         </div>
 
         {/* Agenda */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-sm border border-white/80 p-6 hover:shadow-md transition-shadow duration-200">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-gray-800">Prochains événements</h2>
             <Link href="/agenda" className="text-blue-600 text-sm hover:underline flex items-center gap-1">
@@ -119,7 +119,7 @@ export default function Dashboard() {
               <p className="text-gray-400 text-sm text-center py-4">Aucun événement à venir</p>
             ) : (
               stats.agendaProchain.map((evt: any) => (
-                <div key={evt.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                <div key={evt.id} className="flex items-start gap-3 p-3 bg-blue-50/60 rounded-lg">
                   <div className="bg-blue-100 text-blue-700 rounded-lg p-2 flex-shrink-0">
                     <Calendar className="w-4 h-4" />
                   </div>
@@ -137,7 +137,7 @@ export default function Dashboard() {
       </div>
 
       {/* Dossiers récents */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-sm border border-white/80 p-6 hover:shadow-md transition-shadow duration-200">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-gray-800">Dossiers récents</h2>
           <Link href="/dossiers" className="text-blue-600 text-sm hover:underline flex items-center gap-1">

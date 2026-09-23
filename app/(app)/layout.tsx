@@ -7,9 +7,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!session) redirect('/login');
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen" style={{ background: "linear-gradient(135deg, #EDF0F6 0%, #F0F3F9 40%, #E8EEF7 100%)" }}>
       <Sidebar user={session} />
-      <main className="flex-1 min-w-0 overflow-auto">
+      <main className="flex-1 min-w-0 overflow-auto pt-14 lg:pt-0">
         {children}
       </main>
     </div>
