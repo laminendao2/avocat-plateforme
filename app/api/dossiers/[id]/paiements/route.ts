@@ -60,7 +60,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       note: note ?? '',
       createdBy: claims.uid,
       createdAt: FieldValue.serverTimestamp(),
-      visibleClient: false,
+      visibleClient: true,
       visibleAssocies: true,
     });
 
