@@ -205,10 +205,33 @@ export async function uploadFileToDrive(
   }
 
   const data = await uploadRes.json();
+
+  // Rendre le fichier lisible par tous via le lien (associés + portail client)
+  await setFilePublicReadable(accessToken, data.id as string);
+
   return {
     fileId:      data.id as string,
     webViewLink: data.webViewLink as string,
   };
+}
+
+// ─── Permissions ───────────────────────────────────────────────────────────────
+
+/**
+ * Rend un fichier Drive accessible à tous avec le lien (lecture seule).
+ */
+export async function setFilePublicReadable(
+  accessToken: string,
+  fileId: string,
+): Promise<void> {
+  await fetch(`${DRIVE_API}/files/${fileId}/permissions`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ role: 'reader', type: 'anyone' }),
+  });
 }
 
 // ─── Util ──────────────────────────────────────────────────────────────────────
