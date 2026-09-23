@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebase-admin';
+import { adminDb, adminStorage } from '@/lib/firebase-admin';
 import { verifySession } from '@/lib/auth-firebase';
 import { getAccessToken } from '@/lib/google-drive';
 
@@ -23,9 +23,21 @@ export async function GET(_req: NextRequest, { params }: Params) {
     if (!docSnap.exists) return NextResponse.json({ error: 'Document introuvable' }, { status: 404 });
     const doc = docSnap.data()!;
 
-    // Si Firebase Storage, rediriger directement
+    // Firebase Storage : streamer via admin SDK (pas de redirection vers URL publique)
     if (doc.storageType !== 'drive' || !doc.driveFileId) {
-      return NextResponse.redirect(doc.url);
+      const storagePath = doc.storagePath ?? doc.url;
+      const bucket = adminStorage.bucket();
+      const fileRef = bucket.file(storagePath);
+      const [buffer] = await fileRef.download();
+      const contentType = doc.type ?? 'application/octet-stream';
+      const fileName = encodeURIComponent(doc.nom ?? doc.nomOriginal ?? 'document');
+      return new NextResponse(buffer, {
+        headers: {
+          'Content-Type': contentType,
+          'Content-Disposition': `inline; filename="${fileName}"`,
+          'Cache-Control': 'private, no-store',
+        },
+      });
     }
 
     // Proxy Drive : utiliser le token de l'avocat propriétaire

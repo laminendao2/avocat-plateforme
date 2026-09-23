@@ -187,7 +187,6 @@ async function uploadToFirebase(
   await fileRef.save(buffer, {
     metadata: { contentType, metadata: { uploadedBy: uid, dossierId } },
   });
-  await fileRef.makePublic();
-  const url = `https://storage.googleapis.com/${bucket.name}/${storagePath}`;
-  return { url, storagePath };
+  // Pas de makePublic() — accès via proxy authentifié uniquement
+  return { url: storagePath, storagePath };
 }
