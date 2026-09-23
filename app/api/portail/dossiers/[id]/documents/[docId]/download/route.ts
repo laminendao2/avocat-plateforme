@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
-import { verifyClientSession } from '@/lib/auth-portail';
+import { verifyClientSession } from '@/lib/auth-firebase';
 import { getAccessToken } from '@/lib/google-drive';
 
 type Params = { params: Promise<{ id: string; docId: string }> };
