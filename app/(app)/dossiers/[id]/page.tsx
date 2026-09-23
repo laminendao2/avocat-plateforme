@@ -985,7 +985,7 @@ export default function DossierDetailPage() {
                 {documents.map((doc) => (
                   <div key={doc.id} className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white shadow-sm hover:border-blue-300 hover:shadow-md transition-all">
                     <a
-                      href={doc.url}
+                      href={doc.storageType === 'drive' ? `/api/dossiers/${id}/documents/${doc.id}/download` : doc.url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-3 p-3 flex-1 min-w-0"

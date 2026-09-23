@@ -206,9 +206,6 @@ export async function uploadFileToDrive(
 
   const data = await uploadRes.json();
 
-  // Rendre le fichier lisible par tous via le lien (associés + portail client)
-  await setFilePublicReadable(accessToken, data.id as string);
-
   return {
     fileId:      data.id as string,
     webViewLink: data.webViewLink as string,

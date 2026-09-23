@@ -251,7 +251,7 @@ export default function PortailDossierPage() {
               const countdown = timers[doc.id];
               return (
                 <div key={doc.id} className="flex items-center gap-2 p-3 rounded-lg border border-gray-100 hover:border-gray-200 group">
-                  <a href={doc.url} target="_blank" rel="noopener noreferrer"
+                  <a href={doc.storageType === 'drive' ? `/api/portail/dossiers/${id}/documents/${doc.id}/download` : doc.url} target="_blank" rel="noopener noreferrer"
                     className="flex-1 flex items-center gap-2 min-w-0">
                     <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
                     <span className="text-sm text-gray-700 truncate">{doc.nomOriginal || doc.nom}</span>
