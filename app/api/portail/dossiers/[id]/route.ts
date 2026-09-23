@@ -61,7 +61,7 @@ export async function GET(_req: NextRequest, { params }: P) {
     const pSnap = await adminDb.collection('dossiers').doc(id).collection('paiements').orderBy('date', 'asc').get();
     const paiements = pSnap.docs
       .map(p => ({ id: p.id, ...p.data(), date: serTimestamp(p.data().date) }))
-      .filter((p: any) => p.visibleClient === true);
+      .filter((p: any) => p.visibleClient !== false);
 
     // Documents — visible to client OR uploaded by client
     const dSnap = await adminDb.collection('dossiers').doc(id).collection('documents').get();
