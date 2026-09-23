@@ -1,6 +1,6 @@
 'use client';
 import { useRouter, usePathname } from 'next/navigation';
-import { FolderOpen, Calendar, LogOut, UserCircle } from 'lucide-react';
+import { FolderOpen, Calendar, LogOut, UserCircle, ArrowUpRight } from 'lucide-react';
 import LogoCJ from '@/components/LogoCJ';
 
 export default function PortailLayout({ children }: { children: React.ReactNode }) {
@@ -62,9 +62,18 @@ export default function PortailLayout({ children }: { children: React.ReactNode 
               <UserCircle className="w-4 h-4" />
               <span className="hidden sm:inline">Profil</span>
             </button>
-                        <button
-              onClick={logout}
+            <a
+              href="/"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition ml-2"
+              style={{ color: '#D4AF5A', border: '1px solid rgba(212,175,90,0.3)' }}
+              title="Espace professionnel"
+            >
+              <ArrowUpRight className="w-4 h-4" />
+              <span className="hidden sm:inline">Espace pro</span>
+            </a>
+            <button
+              onClick={logout}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition ml-1"
               style={{ color: 'rgba(255,255,255,0.5)' }}
             >
               <LogOut className="w-4 h-4" />
