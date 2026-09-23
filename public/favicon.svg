@@ -1,0 +1,7 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#0C1B3E" rx="12"/>
+  <polygon points="32,4 60,32 32,60 4,32" fill="none" stroke="#B8963E" stroke-width="1.2"/>
+  <polygon points="32,13 51,32 32,51 13,32" fill="none" stroke="#B8963E" stroke-width="0.5" opacity="0.5"/>
+  <text x="32" y="42" font-family="Georgia, serif" font-size="28" font-weight="300" fill="#F6F4F0" text-anchor="middle" letter-spacing="-0.5">CJ</text>
+  <line x1="18" y1="45" x2="46" y2="45" stroke="#B8963E" stroke-width="0.6"/>
+</svg>

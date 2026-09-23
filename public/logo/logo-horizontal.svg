@@ -1,0 +1,14 @@
+<svg viewBox="0 0 480 110" xmlns="http://www.w3.org/2000/svg">
+  <rect width="480" height="110" fill="#FFFFFF"/>
+  <polygon points="55,6 104,55 55,104 6,55" fill="none" stroke="#B8963E" stroke-width="0.9"/>
+  <polygon points="55,18 92,55 55,92 18,55" fill="none" stroke="#B8963E" stroke-width="0.35" opacity="0.5"/>
+  <rect x="51.5" y="2" width="7" height="7" fill="#B8963E" transform="rotate(45 55 5.5)"/>
+  <rect x="51.5" y="101" width="7" height="7" fill="#B8963E" transform="rotate(45 55 104.5)"/>
+  <rect x="2" y="51.5" width="7" height="7" fill="#B8963E" transform="rotate(45 5.5 55)"/>
+  <rect x="101" y="51.5" width="7" height="7" fill="#B8963E" transform="rotate(45 104.5 55)"/>
+  <text x="55" y="72" font-family="Cormorant Garamond, Georgia, serif" font-size="52" font-weight="300" fill="#0C1B3E" text-anchor="middle" letter-spacing="-1">CJ</text>
+  <line x1="35" y1="79" x2="75" y2="79" stroke="#B8963E" stroke-width="0.5"/>
+  <line x1="128" y1="22" x2="128" y2="88" stroke="#B8963E" stroke-width="0.6" opacity="0.4"/>
+  <text x="148" y="49" font-family="Montserrat, Arial, sans-serif" font-size="19" font-weight="600" fill="#0C1B3E" letter-spacing="3">CABINET</text>
+  <text x="148" y="72" font-family="Montserrat, Arial, sans-serif" font-size="14" font-weight="300" fill="#B8963E" letter-spacing="5.5">JURIDIQUE</text>
+</svg>

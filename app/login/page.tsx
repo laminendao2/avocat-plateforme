@@ -2,7 +2,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { Scale, Lock, Mail, Eye, EyeOff } from 'lucide-react';
+import { Lock, Mail, Eye, EyeOff } from 'lucide-react';
+import LogoCJ from '@/components/LogoCJ';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -31,19 +32,24 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="relative min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center p-4 overflow-hidden">
+      {/* Halos décoratifs */}
+      <div className="pointer-events-none absolute -top-24 -left-24 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -right-24 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl" />
+      <div className="pointer-events-none absolute top-1/3 right-1/4 w-56 h-56 bg-blue-400/10 rounded-full blur-3xl" />
+
+      <div className="relative w-full max-w-md animate-fade-in">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-600 rounded-2xl shadow-2xl mb-4">
-            <Scale className="w-10 h-10 text-white" />
+          <div className="mb-4">
+            <LogoCJ variant="dark" size={88} />
           </div>
           <h1 className="text-3xl font-bold text-white">Cabinet Juridique</h1>
           <p className="text-blue-300 mt-1">Plateforme de gestion des dossiers</p>
         </div>
 
         {/* Carte — couleurs forcées pour ignorer le dark mode système */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8" style={{ colorScheme: 'light' }}>
+        <div className="bg-white rounded-2xl shadow-2xl shadow-black/40 p-8 ring-1 ring-black/5" style={{ colorScheme: 'light' }}>
           <h2 className="text-xl font-semibold mb-6" style={{ color: '#1f2937' }}>Connexion</h2>
 
           {error && (
@@ -91,8 +97,8 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full font-semibold py-3 rounded-lg transition shadow-lg"
-              style={{ background: loading ? '#93c5fd' : '#2563eb', color: '#ffffff' }}
+              className="w-full font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg shadow-blue-600/30 hover:shadow-xl hover:shadow-blue-600/40 hover:-translate-y-0.5 active:translate-y-0"
+              style={{ background: loading ? '#93c5fd' : 'linear-gradient(135deg, #3b82f6, #2563eb)', color: '#ffffff' }}
             >
               {loading ? 'Connexion...' : 'Se connecter'}
             </button>

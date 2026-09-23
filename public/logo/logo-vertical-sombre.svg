@@ -1,0 +1,13 @@
+<svg viewBox="0 0 280 320" xmlns="http://www.w3.org/2000/svg">
+  <rect width="280" height="320" fill="#0C1B3E"/>
+  <polygon points="140,18 262,140 140,262 18,140" fill="none" stroke="#B8963E" stroke-width="1"/>
+  <polygon points="140,38 242,140 140,242 38,140" fill="none" stroke="#B8963E" stroke-width="0.4" opacity="0.5"/>
+  <rect x="136" y="12" width="8" height="8" fill="#B8963E" transform="rotate(45 140 16)"/>
+  <rect x="136" y="264" width="8" height="8" fill="#B8963E" transform="rotate(45 140 268)"/>
+  <rect x="12" y="136" width="8" height="8" fill="#B8963E" transform="rotate(45 16 140)"/>
+  <rect x="264" y="136" width="8" height="8" fill="#B8963E" transform="rotate(45 268 140)"/>
+  <text x="140" y="164" font-family="Cormorant Garamond, Georgia, serif" font-size="88" font-weight="300" fill="#F6F4F0" text-anchor="middle" letter-spacing="-2">CJ</text>
+  <line x1="95" y1="178" x2="185" y2="178" stroke="#B8963E" stroke-width="0.6"/>
+  <text x="140" y="218" font-family="Montserrat, Arial, sans-serif" font-size="10.5" font-weight="500" fill="#F6F4F0" text-anchor="middle" letter-spacing="5">CABINET</text>
+  <text x="140" y="234" font-family="Montserrat, Arial, sans-serif" font-size="10.5" font-weight="300" fill="#B8963E" text-anchor="middle" letter-spacing="4">JURIDIQUE</text>
+</svg>
