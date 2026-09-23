@@ -49,7 +49,7 @@ function DossiersContent() {
           <h1 className="text-2xl font-bold text-gray-900">Dossiers</h1>
           <p className="text-gray-500 text-sm mt-0.5">{dossiers.length} dossier(s)</p>
         </div>
-        <Link href="/dossiers/nouveau" className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-medium text-sm">
+        <Link href="/dossiers/nouveau" className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-2.5 rounded-xl shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all duration-200 font-medium text-sm">
           <Plus className="w-4 h-4" /> Nouveau dossier
         </Link>
       </div>

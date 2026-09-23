@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth';
 import Sidebar from '@/components/Sidebar';
+import TopBar from '@/components/TopBar';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
@@ -9,9 +10,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-screen" style={{ background: "linear-gradient(135deg, #EDF0F6 0%, #F0F3F9 40%, #E8EEF7 100%)" }}>
       <Sidebar user={session} />
-      <main className="flex-1 min-w-0 overflow-auto pt-14 lg:pt-0">
-        {children}
-      </main>
+      <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
+        <TopBar user={session} />
+        <main className="flex-1 overflow-auto pt-14 lg:pt-0">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

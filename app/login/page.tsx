@@ -41,7 +41,7 @@ export default function LoginPage() {
       <div className="relative w-full max-w-md animate-fade-in">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="mb-4">
+          <div className="mb-4 flex justify-center">
             <LogoCJ variant="dark" size={88} />
           </div>
           <h1 className="text-3xl font-bold text-white">Cabinet Juridique</h1>
@@ -108,10 +108,16 @@ export default function LoginPage() {
         <p className="text-center text-slate-400 text-xs mt-6">
           Plateforme sécurisée — Cabinet Juridique © 2026
         </p>
-        <p className="text-center text-xs mt-2">
-          <span className="text-slate-400">Vous êtes client ? </span>
-          <a href="/portail/login" className="text-blue-400 hover:underline">Accéder à l'espace client</a>
-        </p>
+        <div className="text-center mt-2">
+          <a
+            href="/portail/login"
+            className="inline-flex items-center gap-1.5 text-xs px-4 py-2 rounded-lg transition"
+            style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.12)' }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Espace client
+          </a>
+        </div>
       </div>
     </div>
   );
