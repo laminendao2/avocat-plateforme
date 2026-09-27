@@ -37,12 +37,30 @@ export async function GET(_request: NextRequest) {
     const dossiersRecents = (dossiers as any[]).slice(0, 10).map((d) => ({
       id: d.id,
       reference: d.reference,
-      objet: d.objet,
+      titre: d.titre ?? d.objet ?? '',
+      objet: d.objet ?? d.titre ?? '',
       categorie: d.categorie,
       statut: d.statut,
+      statutFacturation: d.statutFacturation ?? 'non_defini',
+      dateEcheance: (d.dateEcheance as any)?.toDate?.().toISOString() ?? d.dateEcheance ?? null,
+      montantHonoraires: d.montantHonoraires ?? 0,
+      clientId: d.clientId ?? '',
       client_nom: d.client_nom ?? '',
       client_prenom: d.client_prenom ?? '',
     }));
+
+    // Trend: count dossiers created this month vs last month
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const thisMonthCount = (dossiers as any[]).filter(d => {
+      const created = (d.createdAt as any)?.toDate?.();
+      return created && created >= startOfMonth;
+    }).length;
+    const lastMonthCount = (dossiers as any[]).filter(d => {
+      const created = (d.createdAt as any)?.toDate?.();
+      return created && created >= startOfLastMonth && created < startOfMonth;
+    }).length;
 
     const now = new Date();
     const agendaProchain = agendaSnap.docs
@@ -67,6 +85,8 @@ export async function GET(_request: NextRequest) {
       parCategorie,
       dossiersRecents,
       agendaProchain,
+      thisMonthCount,
+      lastMonthCount,
     });
   } catch (error: any) {
     console.error('GET /api/stats error:', error);

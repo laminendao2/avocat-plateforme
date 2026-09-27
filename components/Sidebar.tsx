@@ -1,14 +1,11 @@
 'use client';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import {
-  LayoutDashboard, FolderOpen, Users, Calendar,
-  FileText, Settings, LogOut, Menu, X, ShieldCheck, Trash2
-} from 'lucide-react';
-import LogoCJ from '@/components/LogoCJ';
 import { useState } from 'react';
-
-const ADMIN_EMAILS = ['laminendao2@gmail.com', 'laminendao2@hotmail.com'];
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import {
+  LayoutDashboard, FolderOpen, Users, Calendar, FileText,
+  Settings, Trash2, UserCog, LogOut, Menu, X, Briefcase
+} from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
@@ -20,123 +17,128 @@ const navItems = [
   { href: '/corbeille', label: 'Corbeille', icon: Trash2 },
 ];
 
-export default function Sidebar({ user }: { user: { nom?: string; displayName?: string; email: string; role: string } }) {
+const adminItems = [
+  { href: '/admin/avocats', label: 'Gestion des avocats', icon: UserCog },
+];
+
+const ADMIN_EMAILS = ['laminendao2@gmail.com', 'laminendao2@hotmail.com'];
+
+export default function Sidebar({ user }: { user: { displayName?: string; email: string; role?: string } }) {
   const pathname = usePathname();
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const isAdmin = ADMIN_EMAILS.includes(user.email);
 
-  async function logout() {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    router.push('/login');
+  const initial = (user.displayName ?? user.email ?? '?').charAt(0).toUpperCase();
+  const name = user.displayName || user.email.split('@')[0];
+
+  function isActive(href: string) {
+    if (href === '/dashboard') return pathname === '/dashboard';
+    return pathname.startsWith(href);
   }
 
   const SidebarContent = () => (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" style={{ background: '#0C1B3E' }}>
       {/* Logo */}
-      <div className="flex items-center gap-3 px-5 py-6">
-        <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-900/40 ring-1 ring-white/10">
-          <LogoCJ variant="dark" size={36} />
+      <div className="flex items-center gap-3 px-5 py-5 border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#D4AF5A' }}>
+          <Briefcase className="w-5 h-5 text-white" />
         </div>
         <div>
-          <p className="text-white font-bold text-sm leading-tight tracking-tight">Cabinet Juridique</p>
-          <p className="text-blue-300/80 text-xs">Gestion des dossiers</p>
+          <p className="text-white font-bold text-sm leading-tight">Cabinet Juridique</p>
+          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>Gestion des dossiers</p>
         </div>
       </div>
 
-      <div className="mx-4 h-px bg-gradient-to-r from-transparent via-blue-700/60 to-transparent" />
-
       {/* Nav */}
-      <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {navItems.map(({ href, label, icon: Icon }) => {
-          const isActive = pathname === href || (pathname.startsWith(href) && href !== '/dashboard');
+          const active = isActive(href);
           return (
-            <Link
-              key={href}
-              href={href}
-              onClick={() => setOpen(false)}
-              className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 ${
-                isActive
-                  ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white font-medium shadow-lg shadow-blue-900/30'
-                  : 'text-blue-100/80 hover:bg-white/5 hover:text-white'
-              }`}
-            >
-              {isActive && <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-full bg-white/80" />}
-              <Icon className="flex-shrink-0 w-4 h-4" />
-              <span>{label}</span>
+            <Link key={href} href={href} onClick={() => setOpen(false)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150"
+              style={active
+                ? { background: 'rgba(255,255,255,0.12)', color: '#fff' }
+                : { color: 'rgba(255,255,255,0.55)' }
+              }
+              onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.85)'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; }}
+              onMouseLeave={e => { if (!active) { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.55)'; (e.currentTarget as HTMLElement).style.background = 'transparent'; } }}>
+              <Icon className="w-4.5 h-4.5 flex-shrink-0" style={{ width: '18px', height: '18px' }} />
+              {label}
             </Link>
           );
         })}
 
-        {/* Lien admin uniquement */}
         {isAdmin && (
           <>
-            <div className="px-3 pt-5 pb-1">
-              <p className="text-blue-400/70 text-[11px] font-semibold uppercase tracking-widest">Administration</p>
+            <div className="mt-4 mb-2 px-3">
+              <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                Administration
+              </p>
             </div>
-            <Link
-              href="/admin/avocats"
-              onClick={() => setOpen(false)}
-              className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 ${
-                pathname.startsWith('/admin')
-                  ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white font-medium shadow-lg shadow-blue-900/30'
-                  : 'text-blue-100/80 hover:bg-white/5 hover:text-white'
-              }`}
-            >
-              <ShieldCheck className="flex-shrink-0 w-4 h-4" />
-              <span>Gestion des avocats</span>
-            </Link>
+            {adminItems.map(({ href, label, icon: Icon }) => {
+              const active = isActive(href);
+              return (
+                <Link key={href} href={href} onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150"
+                  style={active
+                    ? { background: 'rgba(255,255,255,0.12)', color: '#fff' }
+                    : { color: 'rgba(255,255,255,0.55)' }}>
+                  <Icon style={{ width: '18px', height: '18px' }} />
+                  {label}
+                </Link>
+              );
+            })}
           </>
         )}
       </nav>
 
-      {/* User */}
-      <div className="mx-4 h-px bg-gradient-to-r from-transparent via-blue-700/60 to-transparent" />
-      <div className="p-4">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-9 h-9 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 ring-2 ring-white/10">
-            {(user.displayName ?? user.email ?? '?').charAt(0).toUpperCase()}
+      {/* User footer */}
+      <div className="px-3 py-4 border-t" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+        <div className="flex items-center gap-3 mb-3 px-2">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
+            style={{ background: '#D4AF5A' }}>
+            {initial}
           </div>
-          <div className="min-w-0">
-            <p className="text-white text-sm font-medium truncate">{(user.displayName ?? user.email ?? '').split(' ')[0]}</p>
-            <p className="text-blue-300/70 text-xs truncate">{isAdmin ? 'Admin' : user.role}</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-white text-sm font-medium truncate">{name}</p>
+            <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.4)' }}>Admin</p>
           </div>
         </div>
-        <button
-          onClick={logout}
-          className="flex items-center gap-2 w-full px-3 py-2 text-blue-200/80 hover:text-white hover:bg-white/5 rounded-lg text-sm transition"
-        >
-          <LogOut className="w-4 h-4" />
-          Déconnexion
-        </button>
+        <form action="/api/auth/logout" method="POST">
+          <button type="submit"
+            className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-sm transition"
+            style={{ color: 'rgba(255,255,255,0.5)' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#fff'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.5)'; (e.currentTarget as HTMLElement).style.background = 'transparent'; }}>
+            <LogOut style={{ width: '16px', height: '16px' }} /> Déconnexion
+          </button>
+        </form>
       </div>
     </div>
   );
 
   return (
     <>
-      {/* Mobile toggle */}
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex flex-col w-56 flex-shrink-0 min-h-screen">
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile hamburger */}
       <button
-        onClick={() => setOpen(!open)}
-        className="lg:hidden fixed top-4 left-4 z-50 bg-blue-900/95 backdrop-blur text-white p-2.5 rounded-xl shadow-lg shadow-black/20 ring-1 ring-white/10 active:scale-95 transition"
-      >
-        {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        onClick={() => setOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-40 w-9 h-9 rounded-xl flex items-center justify-center text-white shadow-lg"
+        style={{ background: '#0C1B3E' }}>
+        <Menu className="w-5 h-5" />
       </button>
 
-      {/* Overlay mobile */}
+      {/* Mobile overlay */}
       {open && (
-        <div className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40" onClick={() => setOpen(false)} />
+        <div className="lg:hidden fixed inset-0 z-50 flex">
+          <div className="w-56 flex flex-col flex-shrink-0"><SidebarContent /></div>
+          <div className="flex-1 bg-black/50" onClick={() => setOpen(false)} />
+        </div>
       )}
-
-      {/* Sidebar desktop */}
-      <aside className="hidden lg:flex flex-col w-64 bg-gradient-to-b from-slate-900 via-blue-950 to-slate-900 h-screen sticky top-0 flex-shrink-0 shadow-2xl">
-        <SidebarContent />
-      </aside>
-
-      {/* Sidebar mobile */}
-      <aside className={`lg:hidden fixed inset-y-0 left-0 z-40 w-64 bg-gradient-to-b from-slate-900 via-blue-950 to-slate-900 shadow-2xl transform transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
-        <SidebarContent />
-      </aside>
     </>
   );
 }

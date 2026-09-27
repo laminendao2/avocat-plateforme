@@ -1,180 +1,198 @@
 'use client';
-import { useState, useEffect, useMemo } from 'react';
-import { FileText, Search, Download, ExternalLink, FileImage, File, Loader2 } from 'lucide-react';
+import { useEffect, useState, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { FileText, Upload, Eye, Download, Share2, Trash2, Search } from 'lucide-react';
 
-interface Doc {
-  id: string;
-  dossierId: string;
-  dossierRef: string;
-  clientNom: string;
-  clientPrenom: string;
-  clientTelephone: string;
-  nom: string;
-  nomOriginal?: string;
-  type: string;
-  taille: number;
-  url: string;
-  uploadedAt: string | null;
-  visibleClient?: boolean;
-}
-
-function fileIcon(type: string) {
-  if (type.startsWith('image/')) return <FileImage className="w-5 h-5 text-blue-400" />;
-  if (type === 'application/pdf') return <FileText className="w-5 h-5 text-red-400" />;
-  return <File className="w-5 h-5 text-gray-400" />;
-}
+const TYPE_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
+  pdf: { label: 'PDF', color: 'text-red-700', bg: 'bg-red-500' },
+  docx: { label: 'Word', color: 'text-blue-700', bg: 'bg-blue-500' },
+  doc: { label: 'Word', color: 'text-blue-700', bg: 'bg-blue-500' },
+  jpg: { label: 'Image', color: 'text-green-700', bg: 'bg-green-500' },
+  jpeg: { label: 'Image', color: 'text-green-700', bg: 'bg-green-500' },
+  png: { label: 'Image', color: 'text-green-700', bg: 'bg-green-500' },
+  scan: { label: 'Scan', color: 'text-gray-700', bg: 'bg-gray-500' },
+};
 
 function formatSize(bytes: number) {
+  if (!bytes) return '—';
   if (bytes < 1024) return `${bytes} o`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} Ko`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} Mo`;
 }
 
-function formatDate(iso: string | null) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+function DocBadge({ type }: { type: string }) {
+  const ext = (type || '').toLowerCase().replace('.', '');
+  const cfg = TYPE_CONFIG[ext] || { label: ext.toUpperCase() || 'Fichier', color: 'text-gray-700', bg: 'bg-gray-500' };
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold text-white ${cfg.bg}`}>
+      {cfg.label}
+    </span>
+  );
+}
+
+const PAGE_SIZE = 10;
+
+function DocumentsContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [docs, setDocs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState(searchParams.get('q') || '');
+  const [typeFilter, setTypeFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setLoading(true);
+      const p = new URLSearchParams({ search, type: typeFilter });
+      fetch(`/api/documents?${p}`).then(r => r.json()).then(d => {
+        setDocs(d.documents || d || []);
+        setLoading(false);
+        setPage(1);
+      });
+    }, 300);
+    return () => clearTimeout(t);
+  }, [search, typeFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(docs.length / PAGE_SIZE));
+  const pageDocs = docs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  return (
+    <div className="p-6 lg:p-8 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold" style={{ color: '#0C1B3E' }}>Gestion des Documents</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{docs.length} document{docs.length !== 1 ? 's' : ''}</p>
+        </div>
+        <button
+          className="flex items-center gap-2 text-white px-4 py-2.5 rounded-xl font-medium text-sm shadow-md hover:opacity-90 transition"
+          style={{ background: '#0C1B3E' }}>
+          <Upload className="w-4 h-4" /> Téléverser un document
+        </button>
+      </div>
+
+      {/* Card */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        {/* Filter bar */}
+        <div className="flex flex-wrap items-center gap-3 p-4 border-b border-gray-50">
+          <span className="text-sm text-gray-500 font-medium">Filtrer par :</span>
+          <div className="relative flex-1 min-w-48">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input type="text" value={search} onChange={e => setSearch(e.target.value)}
+              placeholder="Rechercher un document, un client..."
+              className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div className="flex items-center gap-2">
+            {[['', 'Tous les types'], ['pdf', 'PDF'], ['docx', 'Word'], ['jpg', 'Scans']].map(([v, l]) => (
+              <button key={v} onClick={() => { setTypeFilter(v); setPage(1); }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition border ${
+                  typeFilter === v ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
+                }`}>
+                {v === 'pdf' && <span className="w-4 h-4 bg-red-500 rounded text-white text-[9px] flex items-center justify-center font-bold">P</span>}
+                {v === 'docx' && <span className="w-4 h-4 bg-blue-500 rounded text-white text-[9px] flex items-center justify-center font-bold">W</span>}
+                {v === 'jpg' && <span className="w-4 h-4 bg-gray-500 rounded text-white text-[9px] flex items-center justify-center font-bold">S</span>}
+                {l}
+              </button>
+            ))}
+            <select className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+              <option>Dossier : Tous</option>
+            </select>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-20"><div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full" /></div>
+        ) : pageDocs.length === 0 ? (
+          <div className="text-center py-20 text-gray-400 text-sm">
+            <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+            Aucun document trouvé
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 border-b border-gray-100">
+                <tr>
+                  {['Nom du Document', 'Type de Fichier', 'Dossier Associé', 'Taille', 'Date de Modification', 'Actions'].map(h => (
+                    <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {pageDocs.map((doc: any) => {
+                  const ext = (doc.type || doc.nom?.split('.').pop() || '').toLowerCase();
+                  return (
+                    <tr key={doc.id} className="hover:bg-blue-50/20 transition">
+                      <td className="px-5 py-3">
+                        <div className="flex items-center gap-2">
+                          <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          <span className="font-medium text-gray-800">{doc.nom || doc.name || '—'}</span>
+                        </div>
+                      </td>
+                      <td className="px-5 py-3"><DocBadge type={ext} /></td>
+                      <td className="px-5 py-3">
+                        {doc.dossierId ? (
+                          <Link href={`/dossiers/${doc.dossierId}`} className="text-blue-600 font-mono font-medium hover:underline text-xs">
+                            {doc.dossierRef || doc.dossierId}
+                          </Link>
+                        ) : '—'}
+                      </td>
+                      <td className="px-5 py-3 text-gray-500">{formatSize(doc.size || doc.taille)}</td>
+                      <td className="px-5 py-3 text-gray-500">
+                        {doc.updatedAt || doc.createdAt
+                          ? new Date(doc.updatedAt || doc.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
+                          : '—'}
+                      </td>
+                      <td className="px-5 py-3">
+                        <div className="flex items-center gap-1">
+                          <a href={doc.url} target="_blank" rel="noreferrer"
+                            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Voir">
+                            <Eye className="w-4 h-4" />
+                          </a>
+                          <a href={doc.url} download
+                            className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition" title="Télécharger">
+                            <Download className="w-4 h-4" />
+                          </a>
+                          <button className="p-1.5 text-gray-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition" title="Partager">
+                            <Share2 className="w-4 h-4" />
+                          </button>
+                          <button className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="Supprimer">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {!loading && docs.length > 0 && (
+          <div className="flex items-center justify-between px-5 py-3 border-t border-gray-50 text-xs text-gray-500">
+            <span>{Math.min((page-1)*PAGE_SIZE+1, docs.length)}-{Math.min(page*PAGE_SIZE, docs.length)} sur {docs.length} documents</span>
+            <div className="flex items-center gap-1">
+              <button onClick={() => setPage(p => Math.max(1, p-1))} disabled={page===1}
+                className="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 transition">Précédent</button>
+              {Array.from({length: totalPages}, (_, i) => i+1).filter(p => Math.abs(p-page) <= 2).map(p => (
+                <button key={p} onClick={() => setPage(p)}
+                  className={`w-7 h-7 rounded-lg font-medium transition ${p === page ? 'text-white' : 'border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                  style={p === page ? { background: '#0C1B3E' } : {}}>{p}</button>
+              ))}
+              <button onClick={() => setPage(p => Math.min(totalPages, p+1))} disabled={page===totalPages}
+                className="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 transition">Suivant</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function DocumentsPage() {
-  const [documents, setDocuments] = useState<Doc[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [typeFilter, setTypeFilter] = useState('');
-
-  useEffect(() => {
-    fetch('/api/documents')
-      .then(r => r.json())
-      .then(data => setDocuments(data.documents ?? []))
-      .finally(() => setLoading(false));
-  }, []);
-
-  const types = useMemo(() => {
-    const set = new Set(documents.map(d => {
-      if (d.type?.startsWith('image/')) return 'image';
-      if (d.type === 'application/pdf') return 'pdf';
-      return 'autre';
-    }));
-    return [...set];
-  }, [documents]);
-
-  const filtered = useMemo(() => {
-    return documents.filter(d => {
-      const q = search.toLowerCase();
-      const matchSearch = !q ||
-        d.nom?.toLowerCase().includes(q) ||
-        d.dossierRef?.toLowerCase().includes(q) ||
-        d.clientNom?.toLowerCase().includes(q) ||
-        d.clientPrenom?.toLowerCase().includes(q) ||
-        d.clientTelephone?.includes(q);
-      const docType = d.type?.startsWith('image/') ? 'image' : d.type === 'application/pdf' ? 'pdf' : 'autre';
-      const matchType = !typeFilter || docType === typeFilter;
-      return matchSearch && matchType;
-    });
-  }, [documents, search, typeFilter]);
-
-  return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
-        <p className="text-gray-500 mt-1">Tous les documents de vos dossiers</p>
-      </div>
-
-      {/* Filtres */}
-      <div className="flex gap-3 mb-6 flex-wrap">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Nom, prénom, téléphone, référence dossier…"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-          />
-        </div>
-        <select
-          value={typeFilter}
-          onChange={e => setTypeFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">Tous les types</option>
-          {types.includes('pdf') && <option value="pdf">PDF</option>}
-          {types.includes('image') && <option value="image">Images</option>}
-          {types.includes('autre') && <option value="autre">Autres</option>}
-        </select>
-      </div>
-
-      {/* Contenu */}
-      {loading ? (
-        <div className="flex items-center justify-center py-24 text-gray-400">
-          <Loader2 className="w-6 h-6 animate-spin mr-2" />
-          Chargement…
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-16 text-center">
-          <FileText className="w-12 h-12 text-gray-200 mx-auto mb-3" />
-          <p className="text-gray-400 font-medium">
-            {documents.length === 0 ? 'Aucun document pour le moment' : 'Aucun résultat'}
-          </p>
-          {documents.length === 0 && (
-            <p className="text-gray-300 text-sm mt-1">Ajoutez des documents depuis un dossier</p>
-          )}
-        </div>
-      ) : (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-x-4 items-center px-4 py-2 bg-gray-50 border-b border-gray-100 text-xs font-medium text-gray-500 uppercase tracking-wide">
-            <span></span>
-            <span>Nom</span>
-            <span className="text-right">Dossier</span>
-            <span className="text-right">Taille</span>
-            <span className="text-right">Date</span>
-          </div>
-          {filtered.map((doc, i) => (
-            <div
-              key={doc.id}
-              className={`grid grid-cols-[auto_1fr_auto_auto_auto] gap-x-4 items-center px-4 py-3 hover:bg-gray-50 transition ${i !== 0 ? 'border-t border-gray-100' : ''}`}
-            >
-              <div className="flex-shrink-0">{fileIcon(doc.type)}</div>
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">{doc.nom || doc.nomOriginal || 'Sans nom'}</p>
-                {(doc.clientNom || doc.clientPrenom) && <p className="text-xs text-gray-400 truncate">{[doc.clientPrenom, doc.clientNom].filter(Boolean).join(' ')}</p>}
-              </div>
-              <Link
-                href={`/dossiers/${doc.dossierId}`}
-                className="text-xs text-blue-600 hover:underline whitespace-nowrap"
-              >
-                {doc.dossierRef}
-              </Link>
-              <span className="text-xs text-gray-400 whitespace-nowrap text-right">
-                {formatSize(doc.taille ?? 0)}
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400 whitespace-nowrap">{formatDate(doc.uploadedAt)}</span>
-                <a
-                  href={doc.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-blue-600 transition"
-                  title="Ouvrir"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-                <a
-                  href={doc.url}
-                  download
-                  className="text-gray-400 hover:text-blue-600 transition"
-                  title="Télécharger"
-                >
-                  <Download className="w-4 h-4" />
-                </a>
-              </div>
-            </div>
-          ))}
-          <div className="px-4 py-2 bg-gray-50 border-t border-gray-100 text-xs text-gray-400">
-            {filtered.length} document{filtered.length > 1 ? 's' : ''}
-          </div>
-        </div>
-      )}
-    </div>
-  );
+  return <Suspense><DocumentsContent /></Suspense>;
 }
