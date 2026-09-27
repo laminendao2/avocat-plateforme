@@ -146,37 +146,3 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
   }
 }
 
-export async function DELETE(_request: NextRequest, { params }: Params) {
-  try {
-    const claims = await verifySession();
-    const { id } = await params;
-
-    const doc = await adminDb.collection('dossiers').doc(id).get();
-    if (!doc.exists) {
-      return NextResponse.json({ error: 'Dossier introuvable' }, { status: 404 });
-    }
-
-    // Only the owner (avocat) can delete
-    if (doc.data()?.avocatId !== claims.uid) {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
-    }
-
-    // Delete all subcollections
-    const subcollections = ['documents', 'actions', 'paiements', 'notes'];
-    for (const sub of subcollections) {
-      const snap = await adminDb.collection('dossiers').doc(id).collection(sub).get();
-      const batch = adminDb.batch();
-      snap.docs.forEach(d => batch.delete(d.ref));
-      if (!snap.empty) await batch.commit();
-    }
-
-    await adminDb.collection('dossiers').doc(id).delete();
-    return NextResponse.json({ success: true });
-  } catch (error: any) {
-    if (error.message?.includes('session')) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-    }
-    console.error('DELETE /api/dossiers/[id] error:', error);
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
-  }
-}

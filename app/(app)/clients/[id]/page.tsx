@@ -1,7 +1,6 @@
 'use client';
 import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Phone, Mail, MapPin, FolderOpen, Plus, Globe, KeyRound, X, Trash2 } from 'lucide-react';
 
