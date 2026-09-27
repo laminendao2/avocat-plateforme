@@ -17,8 +17,8 @@ export async function GET(_request: NextRequest) {
         .get(),
     ]);
 
-    const totalClients = clientsSnap.size;
-    const dossiers = dossiersSnap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a: any, b: any) => (b.createdAt?.toDate?.() ?? 0) > (a.createdAt?.toDate?.() ?? 0) ? 1 : -1);
+    const totalClients = clientsSnap.docs.filter(d => !d.data().deleted).length;
+    const dossiers = dossiersSnap.docs.filter(d => !d.data().deleted).map((d) => ({ id: d.id, ...d.data() })).sort((a: any, b: any) => (b.createdAt?.toDate?.() ?? 0) > (a.createdAt?.toDate?.() ?? 0) ? 1 : -1);
     const totalDossiers = dossiers.length;
 
     let enCours = 0, clotures = 0;
