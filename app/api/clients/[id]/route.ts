@@ -64,9 +64,9 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
 
     const dossiersSnap = await adminDb.collection('dossiers')
       .where('clientId', '==', id)
-      .where('deleted', '!=', true)
-      .limit(1).get();
-    if (!dossiersSnap.empty) {
+      .get();
+    const activeDossiers = dossiersSnap.docs.filter(d => !d.data().deleted);
+    if (activeDossiers.length > 0) {
       return NextResponse.json(
         { error: "Ce client a des dossiers actifs. Archivez-les d'abord." },
         { status: 409 }
