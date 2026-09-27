@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
-import { getAuthClaims } from '@/lib/auth-utils';
+import { verifySession } from '@/lib/auth-firebase';
 import { FieldValue } from 'firebase-admin/firestore';
 
 export async function GET(req: NextRequest) {
   try {
-    const claims = await getAuthClaims(req);
-    if (!claims) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    const claims = await verifySession();
+    
 
     const { searchParams } = new URL(req.url);
     const statut = searchParams.get('statut');
@@ -69,8 +69,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const claims = await getAuthClaims(req);
-    if (!claims) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    const claims = await verifySession();
+    
 
     const body = await req.json();
     const { dossierId, clientId, lignes, dateEmission, dateEcheance, notes, statut } = body;

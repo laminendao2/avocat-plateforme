@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
-import { getAuthClaims } from '@/lib/auth-utils';
+import { verifySession } from '@/lib/auth-firebase';
 import { FieldValue } from 'firebase-admin/firestore';
 
 async function getFacture(id: string, uid: string) {
@@ -14,8 +14,8 @@ async function getFacture(id: string, uid: string) {
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const claims = await getAuthClaims(req);
-    if (!claims) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    const claims = await verifySession();
+    
 
     const result = await getFacture(params.id, claims.uid);
     if (!result) return NextResponse.json({ error: 'Non trouvé' }, { status: 404 });
@@ -64,8 +64,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const claims = await getAuthClaims(req);
-    if (!claims) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    const claims = await verifySession();
+    
 
     const result = await getFacture(params.id, claims.uid);
     if (!result) return NextResponse.json({ error: 'Non trouvé' }, { status: 404 });
@@ -99,8 +99,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const claims = await getAuthClaims(req);
-    if (!claims) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    const claims = await verifySession();
+    
 
     const result = await getFacture(params.id, claims.uid);
     if (!result) return NextResponse.json({ error: 'Non trouvé' }, { status: 404 });

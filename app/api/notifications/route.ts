@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
-import { getAuthClaims } from '@/lib/auth-utils';
+import { verifySession } from '@/lib/auth-firebase';
 
 export async function GET(req: NextRequest) {
   try {
-    const claims = await getAuthClaims(req);
-    if (!claims) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    const claims = await verifySession();
+    
 
     const uid = claims.uid;
     const now = new Date();
