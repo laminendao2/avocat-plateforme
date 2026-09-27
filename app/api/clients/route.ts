@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       createdAt: (doc.data().createdAt as Timestamp)?.toDate().toISOString(),
     }));
 
-    clients = clients.filter((c: any) => c.createdBy === claims.uid);
+    clients = clients.filter((c: any) => c.createdBy === claims.uid && !c.deleted);
     if (search) {
       clients = clients.filter(
         (c: any) =>

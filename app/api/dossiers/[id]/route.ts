@@ -7,16 +7,12 @@ type Params = { params: Promise<{ id: string }> };
 
 function serializeDoc(id: string, data: FirebaseFirestore.DocumentData) {
   return {
-    id,
-    ...data,
+    id, ...data,
     createdAt: (data.createdAt as Timestamp)?.toDate().toISOString(),
     updatedAt: (data.updatedAt as Timestamp)?.toDate().toISOString(),
-    dateEcheance: data.dateEcheance
-      ? (data.dateEcheance as Timestamp)?.toDate().toISOString()
-      : null,
+    dateEcheance: data.dateEcheance ? (data.dateEcheance as Timestamp)?.toDate().toISOString() : null,
   };
 }
-
 
 async function hasAccess(dossierId: string, uid: string): Promise<{ doc: FirebaseFirestore.DocumentSnapshot; isOwner: boolean } | null> {
   const doc = await adminDb.collection('dossiers').doc(dossierId).get();
@@ -32,45 +28,29 @@ export async function GET(_request: NextRequest, { params }: Params) {
   try {
     const claims = await verifySession();
     const { id } = await params;
-
     const access = await hasAccess(id, claims.uid);
-    if (!access) {
-      return NextResponse.json({ error: 'Dossier introuvable' }, { status: 404 });
-    }
+    if (!access) return NextResponse.json({ error: 'Dossier introuvable' }, { status: 404 });
     const { doc } = access;
-
-    // Also fetch the associated client
     const data = doc.data()!;
     let client = null;
     if (data.clientId) {
       const clientDoc = await adminDb.collection('clients').doc(data.clientId).get();
-      if (clientDoc.exists) {
-        client = { id: clientDoc.id, ...clientDoc.data() };
-      }
+      if (clientDoc.exists) client = { id: clientDoc.id, ...clientDoc.data() };
     }
-
-    // Enrich associes with user info (Firestore first, Firebase Auth fallback)
     const associeIds: string[] = data.associes ?? [];
     const associesData = await Promise.all(
       associeIds.map(async (uid) => {
         const u = await adminDb.collection('users').doc(uid).get();
-        if (u.exists) {
-          return { id: uid, displayName: u.data()?.displayName ?? u.data()?.email ?? uid, email: u.data()?.email ?? '' };
-        }
+        if (u.exists) return { id: uid, displayName: u.data()?.displayName ?? u.data()?.email ?? uid, email: u.data()?.email ?? '' };
         try {
           const authUser = await adminAuth.getUser(uid);
           return { id: uid, displayName: authUser.displayName ?? authUser.email ?? uid, email: authUser.email ?? '' };
-        } catch {
-          return { id: uid, displayName: uid, email: '' };
-        }
+        } catch { return { id: uid, displayName: uid, email: '' }; }
       })
     );
-
     return NextResponse.json({ ...serializeDoc(doc.id, data), client, associesData, isOwner: access.isOwner });
   } catch (error: any) {
-    if (error.message?.includes('session')) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-    }
+    if (error.message?.includes('session')) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     console.error('GET /api/dossiers/[id] error:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
@@ -80,31 +60,18 @@ export async function PUT(request: NextRequest, { params }: Params) {
   try {
     const claims = await verifySession();
     const { id } = await params;
-
     const doc = await adminDb.collection('dossiers').doc(id).get();
     if (!doc.exists || doc.data()?.avocatId !== claims.uid) {
       return NextResponse.json({ error: 'Dossier introuvable ou accès refusé' }, { status: 404 });
     }
-
     const body = await request.json();
     const { id: _id, reference, createdAt, ...updateData } = body;
-
-    // Convert dateEcheance string to Date if provided
-    if (updateData.dateEcheance) {
-      updateData.dateEcheance = new Date(updateData.dateEcheance);
-    }
-
-    await adminDb.collection('dossiers').doc(id).update({
-      ...updateData,
-      updatedAt: FieldValue.serverTimestamp(),
-    });
-
+    if (updateData.dateEcheance) updateData.dateEcheance = new Date(updateData.dateEcheance);
+    await adminDb.collection('dossiers').doc(id).update({ ...updateData, updatedAt: FieldValue.serverTimestamp() });
     const updated = await adminDb.collection('dossiers').doc(id).get();
     return NextResponse.json(serializeDoc(updated.id, updated.data()!));
   } catch (error: any) {
-    if (error.message?.includes('session')) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-    }
+    if (error.message?.includes('session')) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     console.error('PUT /api/dossiers/[id] error:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
@@ -114,35 +81,20 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
   try {
     const claims = await verifySession();
     const { id } = await params;
-
     const doc = await adminDb.collection('dossiers').doc(id).get();
-    if (!doc.exists) {
-      return NextResponse.json({ error: 'Dossier introuvable' }, { status: 404 });
-    }
-    // Seul l'avocat propriétaire peut supprimer
+    if (!doc.exists) return NextResponse.json({ error: 'Dossier introuvable' }, { status: 404 });
     if (doc.data()?.avocatId !== claims.uid) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
-
-    // Supprimer toutes les sous-collections
-    const subcollections = ['documents', 'actions', 'paiements', 'notes'];
-    for (const col of subcollections) {
-      const snap = await adminDb.collection('dossiers').doc(id).collection(col).get();
-      const batch = adminDb.batch();
-      snap.docs.forEach(d => batch.delete(d.ref));
-      if (!snap.empty) await batch.commit();
-    }
-
-    // Supprimer le dossier
-    await adminDb.collection('dossiers').doc(id).delete();
-
+    // Soft delete — move to corbeille
+    await adminDb.collection('dossiers').doc(id).update({
+      deleted: true,
+      deletedAt: FieldValue.serverTimestamp(),
+    });
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    if (error.message?.includes('session')) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-    }
+    if (error.message?.includes('session')) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     console.error('DELETE /api/dossiers/[id] error:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }
-

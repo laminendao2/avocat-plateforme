@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, FolderOpen, Users, Calendar,
-  FileText, Settings, LogOut, Menu, X, ShieldCheck
+  FileText, Settings, LogOut, Menu, X, ShieldCheck, Trash2
 } from 'lucide-react';
 import LogoCJ from '@/components/LogoCJ';
 import { useState } from 'react';
@@ -17,6 +17,7 @@ const navItems = [
   { href: '/agenda', label: 'Agenda', icon: Calendar },
   { href: '/documents', label: 'Documents', icon: FileText },
   { href: '/parametres', label: 'Paramètres', icon: Settings },
+  { href: '/corbeille', label: 'Corbeille', icon: Trash2 },
 ];
 
 export default function Sidebar({ user }: { user: { nom?: string; displayName?: string; email: string; role: string } }) {

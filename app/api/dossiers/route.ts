@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
       .sort((a: any, b: any) => (b.createdAt ?? '').localeCompare(a.createdAt ?? ''));
 
     // Apply filters in JS (avoids composite index requirement)
-    dossiers = dossiers.filter((d: any) => d.avocatId === claims.uid || (d.associes ?? []).includes(claims.uid));
+    dossiers = dossiers.filter((d: any) => (d.avocatId === claims.uid || (d.associes ?? []).includes(claims.uid)) && !d.deleted);
     if (statut) dossiers = dossiers.filter((d: any) => d.statut === statut);
     if (categorie) dossiers = dossiers.filter((d: any) => d.categorie === categorie);
     if (priorite) dossiers = dossiers.filter((d: any) => d.priorite === priorite);
