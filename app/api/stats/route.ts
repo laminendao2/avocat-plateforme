@@ -62,7 +62,7 @@ export async function GET(_request: NextRequest) {
       return created && created >= startOfLastMonth && created < startOfMonth;
     }).length;
 
-    const now = new Date();
+    const now2 = new Date();
     const agendaProchain = agendaSnap.docs
       .map((doc) => {
         const data = doc.data();
@@ -73,7 +73,7 @@ export async function GET(_request: NextRequest) {
           type: data.type ?? '',
         };
       })
-      .filter((e) => e.date_debut && new Date(e.date_debut) >= now)
+      .filter((e) => e.date_debut && new Date(e.date_debut) >= now2)
       .sort((a, b) => (a.date_debut ?? '').localeCompare(b.date_debut ?? ''))
       .slice(0, 5);
 
