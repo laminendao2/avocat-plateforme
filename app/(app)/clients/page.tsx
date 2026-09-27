@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Plus, Search, Eye, Pencil, Trash2, ChevronLeft, ChevronRight, Filter, X } from 'lucide-react';
 
-const TYPE_LABELS: Record<string, string> = { physique: 'Particulier', morale: 'Entreprise' };
-const TYPE_COLORS: Record<string, string> = {
+const TYPE_LABELS: Record<string, string> = { physique: "Particulier", morale: "Entreprise", particulier: "Particulier", entreprise: "Entreprise" };
+const TYPE_COLORS: Record<string, string> = { particulier: "bg-sky-100 text-sky-700", entreprise: "bg-violet-100 text-violet-700",
   physique: 'bg-sky-100 text-sky-700',
   morale: 'bg-violet-100 text-violet-700',
 };

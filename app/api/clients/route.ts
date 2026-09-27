@@ -48,6 +48,31 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Enrich clients with dossier counts and last dossier date
+    const dossiersSnap = await adminDb.collection('dossiers')
+      .where('avocatId', '==', claims.uid)
+      .get();
+    const dossiersByClient: Record<string, { count: number; lastDate: string | null }> = {};
+    for (const d of dossiersSnap.docs) {
+      const dd = d.data();
+      if (dd.deleted) continue;
+      const cid = dd.clientId;
+      if (!cid) continue;
+      if (!dossiersByClient[cid]) dossiersByClient[cid] = { count: 0, lastDate: null };
+      dossiersByClient[cid].count++;
+      const dateStr = (dd.createdAt as any)?.toDate?.()?.toISOString() ?? null;
+      if (dateStr && (!dossiersByClient[cid].lastDate || dateStr > dossiersByClient[cid].lastDate!)) {
+        dossiersByClient[cid].lastDate = dateStr;
+      }
+    }
+
+    clients = clients.map((c: any) => ({
+      ...c,
+      nb_dossiers: dossiersByClient[c.id]?.count ?? 0,
+      dernierDossier: dossiersByClient[c.id]?.lastDate ?? null,
+      type_personne: c.type_personne || (c.typeClient === 'entreprise' ? 'morale' : 'physique'),
+    }));
+
     const total = clients.length;
     const offset = (page - 1) * limit;
     const paginated = clients.slice(offset, offset + limit);

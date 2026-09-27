@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard, FolderOpen, Users, Calendar, FileText,
+  LayoutDashboard, FolderOpen, Users, Calendar, FileText, Receipt,
   Settings, Trash2, UserCog, LogOut, Menu, Briefcase
 } from 'lucide-react';
 
@@ -13,6 +13,7 @@ const navItems = [
   { href: '/clients', label: 'Clients', icon: Users },
   { href: '/agenda', label: 'Agenda', icon: Calendar },
   { href: '/documents', label: 'Documents', icon: FileText },
+  { href: '/factures', label: 'Facturation', icon: Receipt },
   { href: '/parametres', label: 'Paramètres', icon: Settings },
   { href: '/corbeille', label: 'Corbeille', icon: Trash2 },
 ];

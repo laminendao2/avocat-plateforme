@@ -4,26 +4,33 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FileText, Upload, Eye, Download, Share2, Trash2, Search } from 'lucide-react';
 
-const TYPE_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  pdf: { label: 'PDF', color: 'text-red-700', bg: 'bg-red-500' },
-  docx: { label: 'Word', color: 'text-blue-700', bg: 'bg-blue-500' },
-  doc: { label: 'Word', color: 'text-blue-700', bg: 'bg-blue-500' },
-  jpg: { label: 'Image', color: 'text-green-700', bg: 'bg-green-500' },
-  jpeg: { label: 'Image', color: 'text-green-700', bg: 'bg-green-500' },
-  png: { label: 'Image', color: 'text-green-700', bg: 'bg-green-500' },
-  scan: { label: 'Scan', color: 'text-gray-700', bg: 'bg-gray-500' },
+const TYPE_CONFIG: Record<string, { label: string; bg: string }> = {
+  pdf: { label: 'PDF', bg: 'bg-red-500' },
+  'application/pdf': { label: 'PDF', bg: 'bg-red-500' },
+  docx: { label: 'Word', bg: 'bg-blue-600' },
+  doc: { label: 'Word', bg: 'bg-blue-600' },
+  'application/msword': { label: 'Word', bg: 'bg-blue-600' },
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': { label: 'Word', bg: 'bg-blue-600' },
+  jpg: { label: 'Image', bg: 'bg-green-500' },
+  jpeg: { label: 'Image', bg: 'bg-green-500' },
+  png: { label: 'Image', bg: 'bg-green-500' },
+  gif: { label: 'Image', bg: 'bg-green-500' },
+  webp: { label: 'Image', bg: 'bg-green-500' },
+  svg: { label: 'Image', bg: 'bg-green-500' },
+  'image/png': { label: 'Image', bg: 'bg-green-500' },
+  'image/jpeg': { label: 'Image', bg: 'bg-green-500' },
+  'image/gif': { label: 'Image', bg: 'bg-green-500' },
+  'image/webp': { label: 'Image', bg: 'bg-green-500' },
+  scan: { label: 'Scan', bg: 'bg-gray-500' },
+  xlsx: { label: 'Excel', bg: 'bg-emerald-600' },
+  xls: { label: 'Excel', bg: 'bg-emerald-600' },
 };
 
-function formatSize(bytes: number) {
-  if (!bytes) return '—';
-  if (bytes < 1024) return `${bytes} o`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} Ko`;
-  return `${(bytes / 1024 / 1024).toFixed(1)} Mo`;
-}
-
 function DocBadge({ type }: { type: string }) {
-  const ext = (type || '').toLowerCase().replace('.', '');
-  const cfg = TYPE_CONFIG[ext] || { label: ext.toUpperCase() || 'Fichier', color: 'text-gray-700', bg: 'bg-gray-500' };
+  const key = (type || '').toLowerCase().trim();
+  const cfg = TYPE_CONFIG[key]
+    || TYPE_CONFIG[key.split('/').pop() || '']
+    || { label: (key.split('/').pop() || key).toUpperCase() || 'Fichier', bg: 'bg-gray-500' };
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold text-white ${cfg.bg}`}>
       {cfg.label}
@@ -122,7 +129,7 @@ function DocumentsContent() {
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {pageDocs.map((doc: any) => {
-                  const ext = (doc.type || doc.nom?.split('.').pop() || '').toLowerCase();
+                  const ext = (doc.mimeType || doc.type || doc.contentType || doc.nom?.split('.').pop() || '').toLowerCase();
                   return (
                     <tr key={doc.id} className="hover:bg-blue-50/20 transition">
                       <td className="px-5 py-3">
@@ -141,8 +148,8 @@ function DocumentsContent() {
                       </td>
                       <td className="px-5 py-3 text-gray-500">{formatSize(doc.size || doc.taille)}</td>
                       <td className="px-5 py-3 text-gray-500">
-                        {doc.updatedAt || doc.createdAt
-                          ? new Date(doc.updatedAt || doc.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
+                        {doc.uploadedAt || doc.updatedAt || doc.createdAt
+                          ? new Date(doc.uploadedAt || doc.updatedAt || doc.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
                           : '—'}
                       </td>
                       <td className="px-5 py-3">
