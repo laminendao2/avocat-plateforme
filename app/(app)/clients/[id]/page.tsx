@@ -1,7 +1,9 @@
 'use client';
 import { use, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Phone, Mail, MapPin, FolderOpen, Plus, Globe, KeyRound, X } from 'lucide-react';
+import { ArrowLeft, Phone, Mail, MapPin, FolderOpen, Plus, Globe, KeyRound, X, Trash2 } from 'lucide-react';
 
 const CATEGORIES: Record<string, string> = {
   contentieux: 'bg-red-100 text-red-700',
@@ -13,6 +15,7 @@ const CATEGORIES: Record<string, string> = {
 
 export default function ClientDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const router = useRouter();
   const [data, setData] = useState<any>(null);
   const [showPortailModal, setShowPortailModal] = useState(false);
   const [portailPassword, setPortailPassword] = useState('');
@@ -75,21 +78,56 @@ export default function ClientDetail({ params }: { params: Promise<{ id: string 
     }
   }
 
+  async function deleteClient() {
+    if (!confirm('Supprimer définitivement ce client ? Cette action est irréversible.')) return;
+    setDeletingClient(true);
+    try {
+      const res = await fetch(`/api/clients/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        router.push('/clients');
+      } else {
+        const d = await res.json();
+        alert(d.error || 'Erreur lors de la suppression');
+        setDeletingClient(false);
+      }
+    } catch {
+      alert('Erreur réseau');
+      setDeletingClient(false);
+    }
+  }
+
   if (!data) return <div className="flex items-center justify-center h-screen"><div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full" /></div>;
 
   const { client, dossiers } = data;
   if (!client || client.error) return <div className="p-8 text-red-600">Client introuvable.</div>;
 
+  async function deleteClient() {
+    if (!confirm('Supprimer définitivement ce client ? Cette action est irréversible.')) return;
+    const res = await fetch(`/api/clients/${id}`, { method: 'DELETE' });
+    const json = await res.json();
+    if (!res.ok) { alert(json.error); return; }
+    router.push('/clients');
+  }
+
   return (
     <div className="p-6 lg:p-8 max-w-4xl mx-auto">
-      <div className="flex items-center gap-3 mb-8">
-        <Link href="/clients" className="text-gray-400 hover:text-gray-700"><ArrowLeft className="w-5 h-5" /></Link>
-        <div>
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <Link href="/clients" className="text-gray-400 hover:text-gray-700"><ArrowLeft className="w-5 h-5" /></Link>
+          <div>
           <h1 className="text-2xl font-bold text-gray-900">
             {client.type_personne === 'morale' ? client.raison_sociale : `${client.nom} ${client.prenom || ''}`}
           </h1>
           <span className="text-gray-400 font-mono text-sm">{client.reference}</span>
+          </div>
         </div>
+        <button
+          onClick={deleteClient}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-red-600 border border-red-200 hover:bg-red-50 transition"
+        >
+          <Trash2 className="w-4 h-4" />
+          Supprimer
+        </button>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">

@@ -384,6 +384,28 @@ export default function DossierDetailPage() {
     }
   };
 
+  // ─── Delete dossier ────────────────────────────────────────────────────────
+
+  const [deletingDossier, setDeletingDossier] = useState(false);
+
+  async function deleteDossier() {
+    if (!confirm('Supprimer définitivement ce dossier et tous ses documents, actions et paiements ? Cette action est irréversible.')) return;
+    setDeletingDossier(true);
+    try {
+      const res = await fetch(`/api/dossiers/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        router.push('/dossiers');
+      } else {
+        const d = await res.json();
+        alert(d.error || 'Erreur lors de la suppression');
+        setDeletingDossier(false);
+      }
+    } catch {
+      alert('Erreur réseau');
+      setDeletingDossier(false);
+    }
+  }
+
   // ─── Render ────────────────────────────────────────────────────────────────
 
   if (loading) {
@@ -476,12 +498,22 @@ export default function DossierDetailPage() {
             ))}
           </select>
         </div>
-        <button
-          onClick={() => { setEditForm({ titre: dossier.titre || dossier.objet, categorie: dossier.categorie, description: dossier.description, priorite: dossier.priorite, dateEcheance: dossier.dateEcheance?.slice(0,10) ?? '', montantHonoraires: dossier.montantHonoraires ?? 0 }); setShowEdit(true); setEditError(null); }}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition shadow-sm"
-        >
-          ✏️ Modifier
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => { setEditForm({ titre: dossier.titre || dossier.objet, categorie: dossier.categorie, description: dossier.description, priorite: dossier.priorite, dateEcheance: dossier.dateEcheance?.slice(0,10) ?? '', montantHonoraires: dossier.montantHonoraires ?? 0 }); setShowEdit(true); setEditError(null); }}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition shadow-sm"
+          >
+            ✏️ Modifier
+          </button>
+          <button
+            onClick={deleteDossier}
+            disabled={deletingDossier}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-red-600 border border-red-200 hover:bg-red-50 transition disabled:opacity-50"
+          >
+            <Trash2 className="w-4 h-4" />
+            Supprimer
+          </button>
+        </div>
       </div>
 
       {/* Edit modal */}
